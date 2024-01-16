@@ -29,4 +29,5 @@ package-lock.json
 
 # Compiled JavaScript and sourcemaps
 *.js.map
+*.js
 
