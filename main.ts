@@ -63,6 +63,10 @@ async function getAccountTransactions(address: string, apiKey: string): Promise<
 }
 
 async function extractAddresses(address: string, transactions: EthereumTransaction[], depth: number, maxDepth: number): Promise<EthereumAddress> {
+   if(!Array.isArray(transactions)) {
+       console.log("Not array" + transactions);
+   }
+
     if (!Array.isArray(transactions) || transactions === undefined || !transactions || transactions.length === 0) {
         return {
             address: address,
@@ -115,5 +119,5 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
 
 export async function run(address: string): Promise<EthereumAddress> {
     let transactions = await getAccountTransactions(address, apiKey);
-    return extractAddresses(address, transactions, 0, 2);
+    return extractAddresses(address, transactions, 0, 3);
 }
