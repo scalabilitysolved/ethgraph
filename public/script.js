@@ -173,6 +173,30 @@ function renderGraph(accountRelationship, rootAddress) {
             .attr("y", d => d.y);
     });
 
+    // When the simulation ends, zoom to fit the graph
+    simulation.on("end", () => {
+        // Calculate the bounding box of the graph
+        let minX = d3.min(nodes, d => d.x);
+        let maxX = d3.max(nodes, d => d.x);
+        let minY = d3.min(nodes, d => d.y);
+        let maxY = d3.max(nodes, d => d.y);
+
+        // Determine viewport dimensions and padding
+        const padding = 50;
+        const viewportWidth = width - padding * 2;
+        const viewportHeight = height - padding * 2;
+
+        // Calculate scale and translation to fit graph in viewport
+        const scale = Math.min(viewportWidth / (maxX - minX), viewportHeight / (maxY - minY));
+        const translate = [(width - scale * (minX + maxX)) / 2, (height - scale * (minY + maxY)) / 2];
+
+        // Apply scale and translation
+        svg.transition()
+            .duration(500)
+            .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
+    });
+
+
     function drag(simulation) {
         function dragstarted(event) {
             if (!event.active) simulation.alphaTarget(0.3).restart();
