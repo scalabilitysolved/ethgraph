@@ -1,0 +1,33 @@
+# Node.js
+node_modules/
+
+# Compiled TypeScript
+dist/
+
+# IntelliJ IDEA files
+.idea
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Log files
+*.log
+
+# Dependency lock files
+yarn.lock
+package-lock.json
+
+# Environment variables file
+.env
+
+# Editor-specific temporary files
+*.swp
+*.swo
+
+# Compiled JavaScript and sourcemaps
+/dist/
+*.js
+*.js.map
