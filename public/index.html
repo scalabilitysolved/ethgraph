@@ -24,11 +24,26 @@
         }
 
         #depth-selection {
+            margin-top: 1px;
             margin-bottom: 10px;
         }
 
+        #depth-selection p {
+            color: #bbb; /* Softer shade of white */
+            font-size: 14px; /* Slightly smaller font size */
+            text-align: center; /* Center alignment */
+            font-family: Arial, sans-serif; /* Consistent font family */
+            margin-bottom: 10px; /* Adjust margin as needed */
+            text-shadow: 1px 1px 2px #000; /* Optional text shadow for depth */
+            transition: all 0.3s ease; /* Optional transition for interactions */
+        }
+
+        #depth-selection p:hover {
+            color: #ddd; /* Slightly brighter color on hover */
+        }
+
         #depth-selection label {
-            margin-right: 10px;
+            margin-right: 5px;
             color: #ddd; /* Light text color */
             font-size: 14px;
         }
@@ -40,12 +55,19 @@
         #ethereum-address {
             font-size: 16px;
             padding: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 2px;
             border: 2px solid #444; /* Dark border color */
             border-radius: 4px;
             width: 300px;
             background-color: #222; /* Dark input background color */
             color: #ddd; /* Light text color */
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+        }
+
+        #ethereum-address:hover {
+            background-color: #333; /* Slightly lighter background on hover */
+            color: #fff; /* Optional: change text color on hover */
+            border-color: #555; /* Slightly lighter border on hover */
         }
 
         button {
@@ -189,11 +211,10 @@
     <form id="address-form">
         <input type="text" id="ethereum-address" placeholder="Enter Ethereum Address" required>
         <div id="depth-selection">
-            <label><input type="radio" name="depth" value="1" checked> 1</label>
-            <label><input type="radio" name="depth" value="2"> 2</label>
+            <p>Select Graph Depth Level:</p>
+            <label><input type="radio" name="depth" value="1"> 1</label>
+            <label><input type="radio" name="depth" value="2" checked> 2</label>
             <label><input type="radio" name="depth" value="3"> 3</label>
-            <label><input type="radio" name="depth" value="4"> 4</label>
-            <label><input type="radio" name="depth" value="5"> 5</label>
         </div>
         <button type="submit">Show Graph</button>
     </form>
