@@ -63,7 +63,7 @@ async function getAccountTransactions(address: string, apiKey: string): Promise<
 }
 
 async function extractAddresses(address: string, transactions: EthereumTransaction[], depth: number, maxDepth: number): Promise<EthereumAddress> {
-    if (!transactions || transactions.length === 0) {
+    if (transactions === undefined || !transactions || transactions.length === 0) {
         return {
             address: address,
             senders: [],
