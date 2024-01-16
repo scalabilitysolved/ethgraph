@@ -5,6 +5,7 @@
 Ethereum Graph Viewer is a D3.js-based web application that visualizes Ethereum transaction relationships. It allows users to enter an Ethereum address and view a graph representing the transaction interactions with the given address up to a specified depth level.
 
 <img width="1508" alt="CleanShot 2024-01-16 at 22 41 57@2x" src="https://github.com/scalabilitysolved/ethgraph/assets/1309599/bf444edd-b3c5-4766-ba96-1822dba2f21a">
+<img width="1507" alt="CleanShot 2024-01-16 at 22 45 54@2x" src="https://github.com/scalabilitysolved/ethgraph/assets/1309599/57f1f129-446b-458f-9fdf-46d422b2bfb6">
 
 
 ## Features
