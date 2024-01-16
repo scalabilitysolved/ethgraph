@@ -2,7 +2,7 @@
 node_modules/
 
 # Compiled TypeScript
-dist/
+dist/*
 
 # IntelliJ IDEA files
 .idea
@@ -28,6 +28,4 @@ package-lock.json
 *.swo
 
 # Compiled JavaScript and sourcemaps
-/dist/
-*.js
 *.js.map
