@@ -7,21 +7,24 @@ const port = process.env.PORT || 3000;
 app.use(express.static('public'));
 
 app.get('/data', async (req, res) => {
-    const address = req.query.address; // Retrieve the address from the query parameter
+    const address = req.query.address;
+    let depth = Number.isInteger(req.query.depth) ? Number(req.query.depth) : 2;
+
+    if (depth > 5) {
+        depth = 5;
+    }
     if (!address) {
         res.status(400).json({error: 'Ethereum address is required'});
         return;
     }
 
-
     try {
-
         // if address is test, return test data
         if (address.toString() === "test") {
             res.json(testData());
             return;
         }
-        const accountRelationship = await run(address.toString());
+        const accountRelationship = await run(address.toString(), depth);
         res.json(accountRelationship);
     } catch (error) {
         console.error('Error fetching data:', error);

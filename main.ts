@@ -120,7 +120,7 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
     return accountRelationship;
 }
 
-export async function run(address: string): Promise<EthereumAddress> {
+export async function run(address: string, maxDepth: number): Promise<EthereumAddress> {
     let transactions = await getAccountTransactions(address, apiKey);
-    return extractAddresses(address, transactions, 0, 2);
+    return extractAddresses(address, transactions, 0, maxDepth);
 }
