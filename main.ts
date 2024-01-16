@@ -1,7 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 
-// Replace with your Etherscan API Key
 const apiKey: any = process.env.ETHERSCAN_API_KEY;
 
 interface EtherscanApiResponse {
@@ -56,7 +55,7 @@ async function getAccountTransactions(address: string, apiKey: string): Promise<
         const response = await axios.get<EtherscanApiResponse>(url, {params});
         let result = response.data.result;
         console.log(`Fetched ${result.length} transactions for address: ${address}`);
-        return result.slice(0, 100); // Limiting the number of transactions for simplicity
+        return result;
     } catch (error) {
         console.error(`Error fetching transactions: ${error}`);
         throw (error);
@@ -87,7 +86,6 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
     }, {});
 
     console.log(`Address: ${address} has ${Object.keys(transactionsMap).length} senders`);
-    //log the transactions
     console.log(`Address: ${address} has senders of ${Object.keys(transactionsMap)}`);
 
     for (const key of Object.keys(transactionsMap)) {
