@@ -18,7 +18,7 @@ async function fetchDataFromServer(address) {
     try {
         const response = await fetch(`/data?address=${address}`);
         if (!response.ok) {
-            throw new Error(`Server response not ok: ${response.status}`);
+            throw new Error(`Server response not ok: ${response.status} and ${response.statusText}`);
         }
         const data = await response.json();
 
