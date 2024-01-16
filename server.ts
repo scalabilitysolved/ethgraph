@@ -8,11 +8,13 @@ app.use(express.static('public'));
 
 app.get('/data', async (req, res) => {
     const address = req.query.address;
-    let depth = Number.isInteger(req.query.depth) ? Number(req.query.depth) : 2;
 
-    if (depth > 5) {
-        depth = 5;
+    let depth = parseInt(req.query.depth as string); // Parse depth as integer
+    console.log("LOGGY " + depth);
+    if (isNaN(depth) || depth < 1 || depth > 5) {
+        depth = 2;
     }
+
     if (!address) {
         res.status(400).json({error: 'Ethereum address is required'});
         return;

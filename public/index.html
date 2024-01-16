@@ -23,6 +23,20 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
+        #depth-selection {
+            margin-bottom: 10px;
+        }
+
+        #depth-selection label {
+            margin-right: 10px;
+            color: #ddd; /* Light text color */
+            font-size: 14px;
+        }
+
+        #depth-selection input[type="radio"] {
+            margin-right: 5px;
+        }
+
         #ethereum-address {
             font-size: 16px;
             padding: 10px;
@@ -174,7 +188,13 @@
 <div id="form-container">
     <form id="address-form">
         <input type="text" id="ethereum-address" placeholder="Enter Ethereum Address" required>
-
+        <div id="depth-selection">
+            <label><input type="radio" name="depth" value="1" checked> 1</label>
+            <label><input type="radio" name="depth" value="2"> 2</label>
+            <label><input type="radio" name="depth" value="3"> 3</label>
+            <label><input type="radio" name="depth" value="4"> 4</label>
+            <label><input type="radio" name="depth" value="5"> 5</label>
+        </div>
         <button type="submit">Show Graph</button>
     </form>
 

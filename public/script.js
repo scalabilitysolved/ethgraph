@@ -5,18 +5,20 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         const address = document.getElementById('ethereum-address').value;
+        const depth = document.querySelector('input[name="depth"]:checked').value;
+
 
         document.getElementById('form-container').style.display = 'none';
         document.getElementById('loading-indicator').style.display = 'block';
         document.getElementById('zoom-controls').style.display = 'none';
 
-        fetchDataFromServer(address);
+        fetchDataFromServer(address,depth);
     });
 });
 
-async function fetchDataFromServer(address) {
+async function fetchDataFromServer(address,depth) {
     try {
-        const response = await fetch(`/data?address=${address}`);
+        const response = await fetch(`/data?address=${address}&depth=${depth}`);
         if (!response.ok) {
             throw new Error(`Server response not ok: ${response.status} and ${response.statusText}`);
         }
