@@ -63,7 +63,7 @@ async function getAccountTransactions(address: string, apiKey: string): Promise<
 }
 
 async function extractAddresses(address: string, transactions: EthereumTransaction[], depth: number, maxDepth: number): Promise<EthereumAddress> {
-    if (transactions === undefined || !transactions || transactions.length === 0) {
+    if (!Array.isArray(transactions) || transactions === undefined || !transactions || transactions.length === 0) {
         return {
             address: address,
             senders: [],
@@ -80,7 +80,7 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
     if (depth >= maxDepth) {
         return accountRelationship;
     }
-
+    console.log(`Reducing transactions ${transactions}`);
     const transactionsMap = transactions.reduce((acc: any, transaction) => {
         if (transaction.from === address) {
             return acc;
