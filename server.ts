@@ -16,8 +16,8 @@ app.get('/data', async (req, res) => {
 
     try {
 
-        // if address is daddy, return test data
-        if (address.toString() === "daddy") {
+        // if address is test, return test data
+        if (address.toString() === "test") {
             res.json(testData());
             return;
         }
@@ -25,7 +25,7 @@ app.get('/data', async (req, res) => {
         res.json(accountRelationship);
     } catch (error) {
         console.error('Error fetching data:', error);
-        res.status(500).json({error: 'Internal Server Error'});
+        res.status(500).json({error: 'Internal Server Error', message: error});
     }
 });
 
@@ -35,7 +35,7 @@ app.listen(port, () => {
 
 function testData() {
     let a: EthereumAddress = {
-        address: "daddy",
+        address: "test",
         senders: [],
         depth: 0
     };
