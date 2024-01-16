@@ -84,7 +84,6 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
     if (depth >= maxDepth) {
         return accountRelationship;
     }
-    console.log(`Reducing transactions ${transactions}`);
     const transactionsMap = transactions.reduce((acc: any, transaction) => {
         if (transaction.from === address) {
             return acc;
