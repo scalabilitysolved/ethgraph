@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const depth = document.querySelector('input[name="depth"]:checked').value;
 
-
         document.getElementById('form-container').style.display = 'none';
         document.getElementById('loading-indicator').style.display = 'block';
         document.getElementById('zoom-controls').style.display = 'none';
@@ -36,8 +35,6 @@ async function fetchDataFromServer(address, depth) {
 
         document.getElementById('loading-indicator').style.display = 'none';
         document.getElementById('graph-container').style.display = 'block';
-
-
         renderGraph(data, address);
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -50,7 +47,6 @@ function isValidEthereumAddress(address) {
     const re = /^0x[a-fA-F0-9]{40}$/;
     return re.test(address);
 }
-
 
 function flattenData(accountRelationship) {
     const nodes = [];
@@ -95,6 +91,7 @@ function renderGraph(accountRelationship, rootAddress) {
     nodes.forEach(node => {
         node.isRoot = node.id === rootAddress;
     });
+    console.log(nodes.map(n => n.balance)); // Add this line in `renderGraph` to log balances
 
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -105,28 +102,18 @@ function renderGraph(accountRelationship, rootAddress) {
         .attr("width", width)
         .attr("height", height);
 
-    const zoom = d3.zoom()
-        .scaleExtent([0.1, 10])
-        .on("zoom", (event) => {
-            container.attr("transform", event.transform);
-        });
 
-    svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
-        .style("fill", "none")
-        .style("pointer-events", "all")
-        .call(zoom)
-        .on("dblclick.zoom", null);
+    const balanceColorScale = d3.scaleThreshold()
+        .domain([0.1, 1, 10, 100])
+        .range(["#00FF00", "#7FFF00", "#FFFF00", "#FFA500", "#FF0000"]);
 
-    const container = svg.append("g");
 
     const simulation = d3.forceSimulation(nodes)
         .force("link", d3.forceLink(links).id(d => d.id).distance(100).strength(1))
         .force("charge", d3.forceManyBody().strength(-1500))
         .force("center", d3.forceCenter(width / 2, height / 2));
 
-    const link = container.append("g")
+    const link = svg.append("g")
         .attr("stroke", "#999")
         .attr("stroke-opacity", 0.6)
         .selectAll("line")
@@ -134,18 +121,19 @@ function renderGraph(accountRelationship, rootAddress) {
         .join("line")
         .attr("stroke-width", d => Math.sqrt(d.value));
 
-    const node
-        = container.append("g")
+    const node = svg.append("g")
         .attr("stroke", "#fff")
         .attr("stroke-width", 1.5)
         .selectAll("circle")
         .data(nodes)
         .join("circle")
         .attr("r", 5)
-        .attr("fill", d => d.isRoot ? "red" : "blue")
+        .join("circle")
+        .attr("class", "d3-circle") // Add a class
+        .attr("fill", d => balanceColorScale(parseFloat(d.balance)))
         .call(drag(simulation));
 
-    const labels = container.append("g")
+    const labels = svg.append("g")
         .attr("class", "labels")
         .selectAll("text")
         .data(nodes)
@@ -154,20 +142,52 @@ function renderGraph(accountRelationship, rootAddress) {
         .attr("dy", ".35em")
         .text(d => d.id.substring(0, 5));
 
+    const thresholds = balanceColorScale.domain();
+    const range = balanceColorScale.range();
+    const legendData = range.map((color, i) => {
+        if (i === 0) {
+            return {color: color, label: `Less than ${thresholds[i]} ETH`};
+        } else if (i < thresholds.length) {
+            return {color: color, label: `${thresholds[i - 1]} - ${thresholds[i]} ETH`};
+        } else {
+            return {color: color, label: `More than ${thresholds[i - 1]} ETH`};
+        }
+    });
+
+
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", "translate(20,20)"); // Adjust position as needed
+
+    legend.selectAll("rect")
+        .data(legendData)
+        .enter().append("rect")
+        .attr("x", 0)
+        .attr("y", (d, i) => i * 25) // Increased spacing
+        .attr("width", 20) // Increased size
+        .attr("height", 20) // Increased size
+        .style("fill", d => d.color);
+
+    legend.selectAll("text")
+        .data(legendData)
+        .enter().append("text")
+        .attr("x", 30) // Adjust text position
+        .attr("y", (d, i) => i * 25 + 10) // Adjust text position
+        .attr("dy", ".35em")
+        .text(d => d.label);
+
     node.on("click", function (event, d) {
         event.stopPropagation();
-        // Update the info card content
         document.getElementById('info-address').textContent = 'Address: ' + d.id;
-        const infoBalance = document.getElementById('info-balance');
-        infoBalance.textContent = `Balance: ${d.balance} ETH`; // Update with the correct balance
+        document.getElementById('info-balance').textContent = `Balance: ${d.balance} ETH`;
         document.getElementById('info-link').href = 'https://etherscan.io/address/' + d.id;
 
-        // Position and display the info card
         const infoCard = document.getElementById('info-card');
         infoCard.style.display = 'block';
         infoCard.style.left = event.pageX + 'px';
         infoCard.style.top = event.pageY + 'px';
     });
+
     svg.on("click", function () {
         document.getElementById('info-card').style.display = 'none';
     });
@@ -191,29 +211,20 @@ function renderGraph(accountRelationship, rootAddress) {
             .attr("y", d => d.y);
     });
 
-    // When the simulation ends, zoom to fit the graph
-    simulation.on("end", () => {
-        // Calculate the bounding box of the graph
-        let minX = d3.min(nodes, d => d.x);
-        let maxX = d3.max(nodes, d => d.x);
-        let minY = d3.min(nodes, d => d.y);
-        let maxY = d3.max(nodes, d => d.y);
+    document.getElementById('zoom-controls').style.display = 'flex';
 
-        // Determine viewport dimensions and padding
-        const padding = 50;
-        const viewportWidth = width - padding * 2;
-        const viewportHeight = height - padding * 2;
+    let currentZoom = 1;
+    const zoomStep = 0.1;
 
-        // Calculate scale and translation to fit graph in viewport
-        const scale = Math.min(viewportWidth / (maxX - minX), viewportHeight / (maxY - minY));
-        const translate = [(width - scale * (minX + maxX)) / 2, (height - scale * (minY + maxY)) / 2];
-
-        // Apply scale and translation
-        svg.transition()
-            .duration(500)
-            .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
+    document.getElementById('zoom-in').addEventListener('click', () => {
+        currentZoom += zoomStep;
+        svg.transition().call(zoom.scaleTo, currentZoom);
     });
 
+    document.getElementById('zoom-out').addEventListener('click', () => {
+        currentZoom = Math.max(currentZoom - zoomStep, 0.1);
+        svg.transition().call(zoom.scaleTo, currentZoom);
+    });
 
     function drag(simulation) {
         function dragstarted(event) {
@@ -238,20 +249,4 @@ function renderGraph(accountRelationship, rootAddress) {
             .on("drag", dragged)
             .on("end", dragended);
     }
-
-    document.getElementById('zoom-controls').style.display = 'flex';
-
-// Zoom in and out functionality
-    let currentZoom = 1;
-    const zoomStep = 0.1;
-
-    document.getElementById('zoom-in').addEventListener('click', () => {
-        currentZoom += zoomStep;
-        svg.transition().call(zoom.scaleTo, currentZoom);
-    });
-
-    document.getElementById('zoom-out').addEventListener('click', () => {
-        currentZoom = Math.max(currentZoom - zoomStep, 0.1);
-        svg.transition().call(zoom.scaleTo, currentZoom);
-    });
 }
