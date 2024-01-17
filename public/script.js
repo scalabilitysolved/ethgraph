@@ -34,7 +34,6 @@ async function fetchDataFromServer(address, depth) {
         }
         const data = await response.json();
 
-        document.getElementById('loading-indicator').style.display = 'none';
         document.getElementById('graph-container').style.display = 'block';
         document.getElementById('form-container').style.display = 'none';
         console.log("Form should be hidden now");
@@ -116,13 +115,13 @@ function renderGraph(accountRelationship, rootAddress) {
 
     function getInitialZoom() {
         const bounds = container.node().getBBox();
-        const padding = 100; // Added padding around the graph
-        const dx = bounds.width + padding,
-            dy = bounds.height + padding,
-            x = bounds.x - padding / 2,
-            y = bounds.y - padding / 2;
+        const padding = 100; // Extra padding around the graph
+        const dx = bounds.width + padding;
+        const dy = bounds.height + padding;
+        const x = bounds.x - padding / 2;
+        const y = bounds.y - padding / 2;
 
-        const scale = Math.min(width / dx, height / dy);
+        const scale = 0.9 / Math.max(dx / width, dy / height);
         const translate = [width / 2 - scale * (x + dx / 2), height / 2 - scale * (y + dy / 2)];
 
         return d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale);
@@ -133,14 +132,20 @@ function renderGraph(accountRelationship, rootAddress) {
         .domain([0.1, 1, 10, 100])
         .range(["#00FF00", "#7FFF00", "#FFFF00", "#FFA500", "#FF0000"]);
 
-
     const simulation = d3.forceSimulation(nodes)
         .force("link", d3.forceLink(links).id(d => d.id).distance(100).strength(1))
         .force("charge", d3.forceManyBody().strength(-1500))
         .force("center", d3.forceCenter(width / 2, height / 2))
         .on("end", () => {
-            // Apply initial zoom after simulation stabilizes
+            // Hide loading indicator only when the graph is ready
+            document.getElementById('loading-indicator').style.display = 'none';
+
+            // Display zoom controls when the graph is ready
+            document.getElementById('zoom-controls').style.display = 'flex';
+
+            // Apply the initial zoom transformation
             svg.call(zoom.transform, getInitialZoom());
+
         });
 
     const link = container.append("g")
@@ -241,6 +246,7 @@ function renderGraph(accountRelationship, rootAddress) {
             .attr("y", d => d.y);
     });
 
+
     document.getElementById('zoom-controls').style.display = 'flex';
 
     document.getElementById('zoom-in').addEventListener('click', () => {
@@ -277,6 +283,4 @@ function renderGraph(accountRelationship, rootAddress) {
             .on("drag", dragged)
             .on("end", dragended);
     }
-
-    svg.call(zoom.transform, getInitialZoom());
 }
