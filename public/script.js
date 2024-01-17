@@ -1,5 +1,6 @@
 import * as d3 from 'https://cdn.skypack.dev/d3@7';
 
+let container;
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('address-form');
     form.addEventListener('submit', function (event) {
@@ -35,6 +36,8 @@ async function fetchDataFromServer(address, depth) {
 
         document.getElementById('loading-indicator').style.display = 'none';
         document.getElementById('graph-container').style.display = 'block';
+        document.getElementById('form-container').style.display = 'none';
+        console.log("Form should be hidden now");
         renderGraph(data, address);
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -91,7 +94,7 @@ function renderGraph(accountRelationship, rootAddress) {
     nodes.forEach(node => {
         node.isRoot = node.id === rootAddress;
     });
-    console.log(nodes.map(n => n.balance)); // Add this line in `renderGraph` to log balances
+
 
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -102,6 +105,29 @@ function renderGraph(accountRelationship, rootAddress) {
         .attr("width", width)
         .attr("height", height);
 
+    container = svg.append("g");
+    const zoom = d3.zoom()
+        .scaleExtent([0.1, 10])
+        .on("zoom", (event) => {
+            console.log("Zoom event triggered");
+            container.attr("transform", event.transform);
+        });
+    svg.call(zoom);
+
+    function getInitialZoom() {
+        const bounds = container.node().getBBox();
+        const padding = 100; // Added padding around the graph
+        const dx = bounds.width + padding,
+            dy = bounds.height + padding,
+            x = bounds.x - padding / 2,
+            y = bounds.y - padding / 2;
+
+        const scale = Math.min(width / dx, height / dy);
+        const translate = [width / 2 - scale * (x + dx / 2), height / 2 - scale * (y + dy / 2)];
+
+        return d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale);
+    }
+
 
     const balanceColorScale = d3.scaleThreshold()
         .domain([0.1, 1, 10, 100])
@@ -111,9 +137,13 @@ function renderGraph(accountRelationship, rootAddress) {
     const simulation = d3.forceSimulation(nodes)
         .force("link", d3.forceLink(links).id(d => d.id).distance(100).strength(1))
         .force("charge", d3.forceManyBody().strength(-1500))
-        .force("center", d3.forceCenter(width / 2, height / 2));
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .on("end", () => {
+            // Apply initial zoom after simulation stabilizes
+            svg.call(zoom.transform, getInitialZoom());
+        });
 
-    const link = svg.append("g")
+    const link = container.append("g")
         .attr("stroke", "#999")
         .attr("stroke-opacity", 0.6)
         .selectAll("line")
@@ -121,7 +151,7 @@ function renderGraph(accountRelationship, rootAddress) {
         .join("line")
         .attr("stroke-width", d => Math.sqrt(d.value));
 
-    const node = svg.append("g")
+    const node = container.append("g")
         .attr("stroke", "#fff")
         .attr("stroke-width", 1.5)
         .selectAll("circle")
@@ -133,7 +163,7 @@ function renderGraph(accountRelationship, rootAddress) {
         .attr("fill", d => balanceColorScale(parseFloat(d.balance)))
         .call(drag(simulation));
 
-    const labels = svg.append("g")
+    const labels = container.append("g")
         .attr("class", "labels")
         .selectAll("text")
         .data(nodes)
@@ -213,18 +243,16 @@ function renderGraph(accountRelationship, rootAddress) {
 
     document.getElementById('zoom-controls').style.display = 'flex';
 
-    let currentZoom = 1;
-    const zoomStep = 0.1;
-
     document.getElementById('zoom-in').addEventListener('click', () => {
-        currentZoom += zoomStep;
-        svg.transition().call(zoom.scaleTo, currentZoom);
+        console.log("Zoom in triggered");
+        zoom.scaleBy(svg.transition().duration(750), 1.2);
     });
 
     document.getElementById('zoom-out').addEventListener('click', () => {
-        currentZoom = Math.max(currentZoom - zoomStep, 0.1);
-        svg.transition().call(zoom.scaleTo, currentZoom);
+        console.log("Zoom out triggered");
+        zoom.scaleBy(svg.transition().duration(750), 0.8);
     });
+
 
     function drag(simulation) {
         function dragstarted(event) {
@@ -249,4 +277,6 @@ function renderGraph(accountRelationship, rootAddress) {
             .on("drag", dragged)
             .on("end", dragended);
     }
+
+    svg.call(zoom.transform, getInitialZoom());
 }
