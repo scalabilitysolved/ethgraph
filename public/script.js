@@ -59,7 +59,7 @@ function flattenData(accountRelationship) {
 
     function addNode(node) {
         if (!added.has(node.address)) {
-            nodes.push({id: node.address, group: node.depth});
+            nodes.push({id: node.address, group: node.depth, balance: node.balance});
             added.add(node.address);
         }
     }
@@ -158,6 +158,8 @@ function renderGraph(accountRelationship, rootAddress) {
         event.stopPropagation();
         // Update the info card content
         document.getElementById('info-address').textContent = 'Address: ' + d.id;
+        const infoBalance = document.getElementById('info-balance');
+        infoBalance.textContent = `Balance: ${d.balance} ETH`; // Update with the correct balance
         document.getElementById('info-link').href = 'https://etherscan.io/address/' + d.id;
 
         // Position and display the info card

@@ -37,6 +37,7 @@ interface EthereumTransaction {
 
 export interface EthereumAddress {
     address: string;
+    balance: string;
     senders: EthereumAddress[];
     depth: number;
 }
@@ -71,11 +72,34 @@ async function getAccountTransactions(address: string, apiKey: string): Promise<
     }
 }
 
+async function getAccountBalances(addresses: string[], apiKey: string): Promise<any> {
+    const url = `https://api.etherscan.io/api`;
+    const params = {
+        module: 'account',
+        action: 'balancemulti',
+        address: addresses.join(','),
+        tag: 'latest',
+        apiKey: apiKey
+    };
+
+    try {
+        console.log(`Fetching balances for addresses: ${addresses}`);
+        const response = await http.get<EtherscanApiResponse>(url, {params}); // Use the rate-limited instance
+        let result = response.data.result;
+        console.log(`Fetched ${result.length} balances for addresses: ${addresses}`);
+        return result;
+    } catch (error) {
+        console.error(`Error fetching balances: ${error}`);
+        throw error;
+    }
+}
+
 async function extractAddresses(address: string, transactions: EthereumTransaction[], depth: number, maxDepth: number): Promise<EthereumAddress> {
     if (!Array.isArray(transactions) || transactions.length === 0) {
         return {
             address: address,
             senders: [],
+            balance: "0",
             depth: depth
         };
     }
@@ -83,6 +107,7 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
     let accountRelationship: EthereumAddress = {
         address: address,
         senders: [],
+        balance: "0",
         depth: depth
     };
 
@@ -112,7 +137,7 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
                 const senderAddress = await extractAddresses(key, senderTransactions, depth + 1, maxDepth);
                 accountRelationship.senders.push(senderAddress);
             } else {
-                accountRelationship.senders.push({address: key, senders: [], depth: depth + 1});
+                accountRelationship.senders.push({address: key, senders: [], depth: depth + 1, balance: "0"});
             }
         }
     }
@@ -120,7 +145,66 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
     return accountRelationship;
 }
 
+function chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+        chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
+}
+
+function getAllUniqueAddresses(relationshipData: EthereumAddress): string[] {
+    const addresses = new Set<string>();
+
+    function addAddress(addressData: EthereumAddress) {
+        if (!addresses.has(addressData.address)) {
+            addresses.add(addressData.address);
+            addressData.senders.forEach(addAddress);
+        }
+    }
+
+    addAddress(relationshipData);
+    return Array.from(addresses);
+}
+
+function combineBalancesWithRelationshipData(relationshipData: EthereumAddress, balances: any[]): EthereumAddress {
+    const balanceMap = new Map(balances.map(b => [b.account, b.balance]));
+
+    function addBalance(addressData: EthereumAddress) {
+        if (balanceMap.has(addressData.address)) {
+            addressData.balance = weiToEther(balanceMap.get(addressData.address));
+        }
+        addressData.senders.forEach(addBalance);
+    }
+
+    addBalance(relationshipData);
+    return relationshipData;
+}
+
+
 export async function run(address: string, maxDepth: number): Promise<EthereumAddress> {
     let transactions = await getAccountTransactions(address, apiKey);
-    return extractAddresses(address, transactions, 0, maxDepth);
+    let addresses = await extractAddresses(address, transactions, 0, maxDepth);
+
+    // Extract all unique addresses
+    const allAddresses = getAllUniqueAddresses(addresses);
+
+    // Chunk addresses into batches of 20
+    const addressChunks = chunkArray(allAddresses, 20);
+
+    // Fetch balances for each chunk
+    const balancePromises = addressChunks.map(chunk => getAccountBalances(chunk, apiKey));
+    const balanceResults = (await Promise.all(balancePromises)).flat();
+
+    // Combine balance data with relationship data
+    const combinedData = combineBalancesWithRelationshipData(addresses, balanceResults);
+
+    return combinedData;
 }
+
+function weiToEther(wei: string | number): string {
+    const weiPerEther = 1e18;
+    const ether = Number(wei) / weiPerEther;
+    return ether.toFixed(18); // Adjust the number of decimal places if needed
+}
+

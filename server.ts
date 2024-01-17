@@ -27,6 +27,7 @@ app.get('/data', async (req, res) => {
             return;
         }
         const accountRelationship = await run(address.toString(), depth);
+        console.log(JSON.stringify(accountRelationship));
         res.json(accountRelationship);
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -42,85 +43,99 @@ function testData() {
     let a: EthereumAddress = {
         address: "test",
         senders: [],
-        depth: 0
+        depth: 0,
+        balance: "0"
     };
 
     let babyOneChild: EthereumAddress = {
         address: "0xbd237a6df1aae2faa85ef690a33768f73d41604f",
         senders: [],
-        depth: 1
+        depth: 1,
+        balance: "0"
     };
 
     let babyTwoChild: EthereumAddress = {
         address: "babyTwoChild",
         senders: [],
-        depth: 1
+        depth: 1,
+        balance: "0"
     }
 
     let babyThreeChild: EthereumAddress = {
         address: "babyThreeChild",
         senders: [],
-        depth: 1
+        depth: 1,
+        balance: "0"
     }
 
     let babyNoChildren: EthereumAddress = {
         address: "babyNoChildren",
         senders: [],
-        depth: 1
+        depth: 1,
+        balance: "0"
     };
 
     let grandBaby: EthereumAddress = {
         address: "grandBaby",
         senders: [],
-        depth: 2
+        depth: 2,
+        balance: "0"
     };
 
     let grandBabyTwo: EthereumAddress = {
         address: "grandBabyTwo",
         senders: [],
-        depth: 2
+        depth: 2,
+        balance: "0"
     };
 
     let grandBabyThree: EthereumAddress = {
         address: "grandBabyThree",
         senders: [],
-        depth: 2
+        depth: 2,
+        balance: "0"
     }
 
     let grandBabyFour: EthereumAddress = {
         address: "grandBabyFour",
         senders: [],
-        depth: 2
+        depth: 2,
+        balance: "0"
     }
 
     let greatGrandBaby: EthereumAddress = {
         address: "greatGrandBaby",
         senders: [],
-        depth: 3
+        depth: 3,
+        balance: "0"
     }
 
     let greatGrandBabyTwo: EthereumAddress = {
         address: "greatGrandBabyTwo",
         senders: [],
-        depth: 3
+        depth: 3,
+        balance: "0"
     }
 
     let greatGrandBabyThree: EthereumAddress = {
         address: "greatGrandBabyThree",
         senders: [],
-        depth: 3
+        depth: 3,
+        balance: "0"
     }
 
     let greatGrandBabyFour: EthereumAddress = {
         address: "greatGrandBabyFour",
         senders: [],
-        depth: 3
+        depth: 3,
+        balance: "0"
     }
 
     let greatGreatGrandBaby: EthereumAddress = {
         address: "greatGreatGrandBaby",
         senders: [],
-        depth: 4
+        depth: 4,
+        balance: "0"
     }
 
 
