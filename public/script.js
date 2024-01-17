@@ -5,6 +5,16 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         const address = document.getElementById('ethereum-address').value;
+        const validationMessageDiv = document.getElementById('validation-message');
+
+        if (!isValidEthereumAddress(address)) {
+            validationMessageDiv.textContent = "Please enter a valid Ethereum address.";
+            validationMessageDiv.style.display = 'block';
+            return;
+        } else {
+            validationMessageDiv.style.display = 'none';
+        }
+
         const depth = document.querySelector('input[name="depth"]:checked').value;
 
 
@@ -12,11 +22,11 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('loading-indicator').style.display = 'block';
         document.getElementById('zoom-controls').style.display = 'none';
 
-        fetchDataFromServer(address,depth);
+        fetchDataFromServer(address, depth);
     });
 });
 
-async function fetchDataFromServer(address,depth) {
+async function fetchDataFromServer(address, depth) {
     try {
         const response = await fetch(`/data?address=${address}&depth=${depth}`);
         if (!response.ok) {
@@ -35,6 +45,12 @@ async function fetchDataFromServer(address,depth) {
         document.getElementById('form-container').style.display = 'block';
     }
 }
+
+function isValidEthereumAddress(address) {
+    const re = /^0x[a-fA-F0-9]{40}$/;
+    return re.test(address);
+}
+
 
 function flattenData(accountRelationship) {
     const nodes = [];
