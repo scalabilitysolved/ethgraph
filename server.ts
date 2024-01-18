@@ -32,7 +32,7 @@ app.get('/recent-addresses', async (req, res) => {
 
 app.get('/data', async (req, res) => {
     const address = req.query.address as string;
-    let depth = parseInt(req.query.depth as string); // Parse depth as integer
+    let depth = parseInt(req.query.depth as string);
     if (isNaN(depth) || depth < 1 || depth > 5) {
         depth = 2;
     }
@@ -46,16 +46,14 @@ app.get('/data', async (req, res) => {
         let cachedData = await redisClient.get(cacheKey);
 
         if (cachedData) {
-            console.log('Cache hit for key:', cacheKey);
             res.json(JSON.parse(cachedData));
         } else {
             const accountRelationship = await run(address.toString(), depth);
             await redisClient.setEx(cacheKey, 86400, JSON.stringify(accountRelationship));
 
             // Store the address in the recent list
-            await redisClient.lPush('recent-addresses', address);
-            await redisClient.lTrim('recent-addresses', 0, 4);
-            console.log('Set cache for key:', cacheKey);
+            redisClient.lPush('recent-addresses', `${address}-${depth}`);
+            redisClient.lTrim('recent-addresses', 0, 4);
             res.json(accountRelationship);
         }
     } catch (error) {

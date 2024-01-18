@@ -1,8 +1,8 @@
 import axios from 'axios';
-import rateLimit from 'axios-rate-limit'; // Import axios-rate-limit
+import rateLimit from 'axios-rate-limit';
 import dotenv from 'dotenv';
 
-dotenv.config(); // Initialize environment variables
+dotenv.config();
 
 const apiKey: any = process.env.ETHERSCAN_API_KEY;
 
@@ -44,8 +44,8 @@ export interface EthereumAddress {
 
 // Create a rate-limited Axios instance
 const http = rateLimit(axios.create(), {
-    maxRequests: 5, // Set the maximum number of requests
-    perMilliseconds: 1000, // Set the time frame for the rate limit in milliseconds
+    maxRequests: 5,
+    perMilliseconds: 1000,
 });
 
 async function getAccountTransactions(address: string, apiKey: string): Promise<EthereumTransaction[]> {
@@ -123,9 +123,6 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
         return acc;
     }, {});
 
-    //console.log(`Address: ${address} has ${Object.keys(transactionsMap).length} senders`);
-    //console.log(`Address: ${address} has senders of ${Object.keys(transactionsMap)}`);
-
     for (const key of Object.keys(transactionsMap)) {
         if (key !== address) {
             if (depth < maxDepth - 1) {
@@ -201,6 +198,6 @@ export async function run(address: string, maxDepth: number): Promise<EthereumAd
 function weiToEther(wei: string | number): string {
     const weiPerEther = 1e18;
     const ether = Number(wei) / weiPerEther;
-    return ether.toFixed(18); // Adjust the number of decimal places if needed
+    return ether.toFixed(18);
 }
 

@@ -65,7 +65,7 @@ async function fetchRecentAddresses() {
     }
 }
 
-function displayRecentAddresses(addresses) {
+function displayRecentAddresses(addressesWithDepth) {
     const container = document.getElementById('recent-addresses-container');
     let list = container.querySelector('ul');
     if (!list) {
@@ -74,31 +74,27 @@ function displayRecentAddresses(addresses) {
     }
     list.innerHTML = ''; // Clear current list items
 
-    addresses.forEach(address => {
-        let listItem = document.createElement('li');
-        listItem.textContent = address;
-        listItem.onclick = () => {
-            const ethereumAddressInput = document.getElementById('ethereum-address');
-            ethereumAddressInput.value = address;
+    addressesWithDepth.forEach(item => {
+        const [address, depth] = item.split('-');
 
-            // Trigger the form submission
-            submitForm();
+        let listItem = document.createElement('li');
+        listItem.textContent = `${address} (Depth: ${depth})`; // Display both
+        listItem.onclick = () => {
+            document.getElementById('ethereum-address').value = address;
+            fetchDataFromServer(address, depth);
         };
         list.appendChild(listItem);
     });
 
-    function submitForm() {
-        const form = document.getElementById('address-form');
-        // You can either directly call the function that handles form submission
-        // Or, if the form has an 'onsubmit' event handler, you can trigger it as follows:
-        form.dispatchEvent(new Event('submit', {cancelable: true}));
-    }
-
     document.getElementById('address-form').addEventListener('submit', function (event) {
         event.preventDefault(); // Prevent default form submission behavior
+
         const address = document.getElementById('ethereum-address').value;
-        xfetchDataFromServer(address, /* defaultDepth or other parameters */);
+        const depth = document.querySelector('input[name="depth"]:checked').value;
+
+        fetchDataFromServer(address, depth);
     });
+
 }
 
 
@@ -218,7 +214,7 @@ function renderGraph(accountRelationship, rootAddress) {
         .join("circle")
         .attr("r", 5)
         .join("circle")
-        .attr("class", "d3-circle") // Add a class
+        .attr("class", "d3-circle")
         .attr("fill", d => balanceColorScale(parseFloat(d.balance)))
         .call(drag(simulation));
 
@@ -246,22 +242,22 @@ function renderGraph(accountRelationship, rootAddress) {
 
     const legend = svg.append("g")
         .attr("class", "legend")
-        .attr("transform", "translate(20,20)"); // Adjust position as needed
+        .attr("transform", "translate(20,20)");
 
     legend.selectAll("rect")
         .data(legendData)
         .enter().append("rect")
         .attr("x", 0)
-        .attr("y", (d, i) => i * 25) // Increased spacing
-        .attr("width", 20) // Increased size
-        .attr("height", 20) // Increased size
+        .attr("y", (d, i) => i * 25)
+        .attr("width", 20)
+        .attr("height", 20)
         .style("fill", d => d.color);
 
     legend.selectAll("text")
         .data(legendData)
         .enter().append("text")
-        .attr("x", 30) // Adjust text position
-        .attr("y", (d, i) => i * 25 + 10) // Adjust text position
+        .attr("x", 30)
+        .attr("y", (d, i) => i * 25 + 10)
         .attr("dy", ".35em")
         .text(d => d.label);
 
