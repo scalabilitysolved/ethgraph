@@ -3,6 +3,14 @@ import * as d3 from 'https://cdn.skypack.dev/d3@7';
 let container;
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('address-form');
+    fetchRecentAddresses()
+        .then(recentAddresses => {
+            displayRecentAddresses(recentAddresses);
+        })
+        .catch(error => {
+            console.error('Error initializing recent addresses:', error);
+        });
+
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         const address = document.getElementById('ethereum-address').value;
@@ -36,7 +44,6 @@ async function fetchDataFromServer(address, depth) {
 
         document.getElementById('graph-container').style.display = 'block';
         document.getElementById('form-container').style.display = 'none';
-        console.log("Form should be hidden now");
         renderGraph(data, address);
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -44,6 +51,56 @@ async function fetchDataFromServer(address, depth) {
         document.getElementById('form-container').style.display = 'block';
     }
 }
+
+async function fetchRecentAddresses() {
+    try {
+        const response = await fetch('/recent-addresses');
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching recent addresses:', error);
+        return [];
+    }
+}
+
+function displayRecentAddresses(addresses) {
+    const container = document.getElementById('recent-addresses-container');
+    let list = container.querySelector('ul');
+    if (!list) {
+        list = document.createElement('ul');
+        container.appendChild(list);
+    }
+    list.innerHTML = ''; // Clear current list items
+
+    addresses.forEach(address => {
+        let listItem = document.createElement('li');
+        listItem.textContent = address;
+        listItem.onclick = () => {
+            const ethereumAddressInput = document.getElementById('ethereum-address');
+            ethereumAddressInput.value = address;
+
+            // Trigger the form submission
+            submitForm();
+        };
+        list.appendChild(listItem);
+    });
+
+    function submitForm() {
+        const form = document.getElementById('address-form');
+        // You can either directly call the function that handles form submission
+        // Or, if the form has an 'onsubmit' event handler, you can trigger it as follows:
+        form.dispatchEvent(new Event('submit', {cancelable: true}));
+    }
+
+    document.getElementById('address-form').addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent default form submission behavior
+        const address = document.getElementById('ethereum-address').value;
+        xfetchDataFromServer(address, /* defaultDepth or other parameters */);
+    });
+}
+
 
 function isValidEthereumAddress(address) {
     const re = /^0x[a-fA-F0-9]{40}$/;
@@ -87,7 +144,6 @@ function renderGraph(accountRelationship, rootAddress) {
         console.error('No data received from the server');
         return;
     }
-
     const {nodes, links} = flattenData(accountRelationship);
 
     nodes.forEach(node => {
@@ -108,7 +164,6 @@ function renderGraph(accountRelationship, rootAddress) {
     const zoom = d3.zoom()
         .scaleExtent([0.1, 10])
         .on("zoom", (event) => {
-            console.log("Zoom event triggered");
             container.attr("transform", event.transform);
         });
     svg.call(zoom);
@@ -137,14 +192,13 @@ function renderGraph(accountRelationship, rootAddress) {
         .force("charge", d3.forceManyBody().strength(-1500))
         .force("center", d3.forceCenter(width / 2, height / 2))
         .on("end", () => {
+
             // Hide loading indicator only when the graph is ready
             document.getElementById('loading-indicator').style.display = 'none';
 
             // Display zoom controls when the graph is ready
             document.getElementById('zoom-controls').style.display = 'flex';
 
-            // Apply the initial zoom transformation
-            svg.call(zoom.transform, getInitialZoom());
 
         });
 
@@ -250,12 +304,10 @@ function renderGraph(accountRelationship, rootAddress) {
     document.getElementById('zoom-controls').style.display = 'flex';
 
     document.getElementById('zoom-in').addEventListener('click', () => {
-        console.log("Zoom in triggered");
         zoom.scaleBy(svg.transition().duration(750), 1.2);
     });
 
     document.getElementById('zoom-out').addEventListener('click', () => {
-        console.log("Zoom out triggered");
         zoom.scaleBy(svg.transition().duration(750), 0.8);
     });
 

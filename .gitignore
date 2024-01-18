@@ -31,3 +31,5 @@ package-lock.json
 *.js.map
 *.js
 
+dump.rdb
+

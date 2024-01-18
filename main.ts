@@ -61,10 +61,8 @@ async function getAccountTransactions(address: string, apiKey: string): Promise<
     };
 
     try {
-        console.log(`Fetching transactions for address: ${address}`);
         const response = await http.get<EtherscanApiResponse>(url, {params}); // Use the rate-limited instance
         let result = response.data.result;
-        console.log(`Fetched ${result.length} transactions for address: ${address}`);
         return result;
     } catch (error) {
         console.error(`Error fetching transactions: ${error}`);
@@ -83,10 +81,8 @@ async function getAccountBalances(addresses: string[], apiKey: string): Promise<
     };
 
     try {
-        console.log(`Fetching balances for addresses: ${addresses}`);
         const response = await http.get<EtherscanApiResponse>(url, {params}); // Use the rate-limited instance
         let result = response.data.result;
-        console.log(`Fetched ${result.length} balances for addresses: ${addresses}`);
         return result;
     } catch (error) {
         console.error(`Error fetching balances: ${error}`);
@@ -127,8 +123,8 @@ async function extractAddresses(address: string, transactions: EthereumTransacti
         return acc;
     }, {});
 
-    console.log(`Address: ${address} has ${Object.keys(transactionsMap).length} senders`);
-    console.log(`Address: ${address} has senders of ${Object.keys(transactionsMap)}`);
+    //console.log(`Address: ${address} has ${Object.keys(transactionsMap).length} senders`);
+    //console.log(`Address: ${address} has senders of ${Object.keys(transactionsMap)}`);
 
     for (const key of Object.keys(transactionsMap)) {
         if (key !== address) {

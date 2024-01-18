@@ -216,6 +216,45 @@
             stroke: #bbb; /* Light link color */
             stroke-width: 2;
         }
+        #recent-addresses-container {
+            background: #1e1e1e; /* Dark gray background */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: #757575; /* Light text color to match input box */
+            margin-top: 20px;
+        }
+
+        #recent-addresses-container h3 {
+            text-align: center;
+            color: #757575; /* Match input box text color */
+            font-size: 16px; /* Smaller font size */
+            margin-bottom: 15px;
+        }
+
+        #recent-addresses-container ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #recent-addresses-container li {
+            padding: 8px;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            font-size: 14px; /* Smaller font size for list items */
+            color: #757575; /* Match input box text color */
+        }
+
+        #recent-addresses-container li:hover {
+            background-color: #333; /* Slightly lighter background on hover */
+        }
+
+        #recent-addresses-container li:last-child {
+            border-bottom: none;
+        }
+
     </style>
 
 </head>
@@ -232,6 +271,11 @@
             <label><input type="radio" name="depth" value="3"> 3</label>
         </div>
         <button type="submit">Show Graph</button>
+        <div id="recent-addresses-container"
+             title="Click on an address to quickly view its transaction graph. These addresses are cached for faster loading.">
+            <h3>Quick Access Addresses</h3>
+            <ul></ul> <!-- The list will be populated by the script -->
+        </div>
     </form>
 
 </div>
@@ -249,6 +293,7 @@
     <p id="info-balance"></p>
     <a id="info-link" href="https://etherscan.io/" target="_blank">Etherscan</a>
 </div>
+
 
 <script type="module" src="script.js"></script>
 </body>
