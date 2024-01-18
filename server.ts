@@ -3,9 +3,10 @@ import {run, EthereumAddress} from './main';
 import {createClient} from 'redis';
 import morgan from 'morgan';
 
-
+const isDevMode = process.env.NODE_ENV === 'development';
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 const redisClient = createClient({
-    url: 'redis://localhost:6379'
+    url: redisUrl
 });
 
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
