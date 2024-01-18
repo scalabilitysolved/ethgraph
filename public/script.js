@@ -215,7 +215,7 @@ function renderGraph(accountRelationship, rootAddress) {
         .attr("r", 5)
         .join("circle")
         .attr("class", "d3-circle")
-        .attr("fill", d => balanceColorScale(parseFloat(d.balance)))
+        .attr("fill", d => d.id === rootAddress ? "#0000FF" : balanceColorScale(parseFloat(d.balance))) // Blue for root node
         .call(drag(simulation));
 
     const labels = container.append("g")
