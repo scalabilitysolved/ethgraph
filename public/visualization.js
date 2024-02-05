@@ -167,6 +167,20 @@ function renderGraph(accountRelationship, rootAddress) {
         });
     svg.call(zoom);
 
+    svg.append('defs').selectAll('marker')
+        .data(['end']) // This can be a list if you have different types of markers
+        .enter().append('marker')
+        .attr('id', String)
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 25) // Adjust this value to position the arrowhead along the link line
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,-5L10,0L0,5')
+        .attr('fill', '#999');
+
     function getInitialZoom() {
         const bounds = container.node().getBBox();
         const padding = 100; // Extra padding around the graph
@@ -207,7 +221,8 @@ function renderGraph(accountRelationship, rootAddress) {
         .selectAll("line")
         .data(links)
         .join("line")
-        .attr("stroke-width", d => Math.sqrt(d.value));
+        .attr("stroke-width", d => Math.sqrt(d.value))
+        .attr('marker-end', 'url(#end)'); // Attach arrowhead to link
 
     const node = container.append("g")
         .attr("stroke", "#fff")

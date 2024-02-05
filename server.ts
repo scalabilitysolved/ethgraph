@@ -9,7 +9,8 @@ const redisClient = createClient({
 });
 
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
-redisClient.connect();
+//Flush on each deployment
+redisClient.connect().then(() => redisClient.flushDb());
 
 
 const app = express();
