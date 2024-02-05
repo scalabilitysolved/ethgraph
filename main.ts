@@ -50,8 +50,18 @@ const http = rateLimit(axios.create(), {
 
 async function executeRequest(url: string, params: any) {
     try {
+        //time the request
+        const start = Date.now();
         const response = await http.get<EtherscanApiResponse>(url, {params}); // Use the rate-limited instance
-        return response.data.result;
+        const result = response.data.result;
+        const elapsed = Date.now() - start;
+        // if params action is X, then do Y
+        if (params.action === 'txlist') {
+            console.log(`Fetched ${result.length} transactions for ${params.address} and took ${elapsed}ms`);
+        } else {
+            console.log(`Fetched balances for ${params.address} and took ${elapsed}ms`);
+        }
+        return result;
     } catch (error) {
         console.error(`Error fetching transactions: ${error}`);
         throw error;
