@@ -52,8 +52,8 @@ app.get('/data', async (req, res) => {
             await redisClient.setEx(cacheKey, 86400, JSON.stringify(accountRelationship));
 
             // Store the address in the recent list
-            redisClient.lPush('recent-addresses', `${address}-${depth}`);
-            redisClient.lTrim('recent-addresses', 0, 4);
+            await redisClient.lPush('recent-addresses', `${address}-${depth}`);
+            await redisClient.lTrim('recent-addresses', 0, 4);
             res.json(accountRelationship);
         }
     } catch (error) {
