@@ -183,7 +183,7 @@ export async function run(address: string, maxDepth: number): Promise<EthereumAd
     // Fetch balances for each chunk
     const balancePromises = addressChunks.map(chunk => getAccountBalances(chunk, apiKey));
     const balanceResults = (await Promise.all(balancePromises)).flat();
-
+//
     // Combine balance data with relationship data
     return combineBalancesWithRelationshipData(addresses, balanceResults);
 }
