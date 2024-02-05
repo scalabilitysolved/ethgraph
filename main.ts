@@ -48,6 +48,16 @@ const http = rateLimit(axios.create(), {
     perMilliseconds: 1000,
 });
 
+async function executeRequest(url: string, params: any) {
+    try {
+        const response = await http.get<EtherscanApiResponse>(url, {params}); // Use the rate-limited instance
+        return response.data.result;
+    } catch (error) {
+        console.error(`Error fetching transactions: ${error}`);
+        throw error;
+    }
+}
+
 async function getAccountTransactions(address: string, apiKey: string): Promise<EthereumTransaction[]> {
     const url = `https://api.etherscan.io/api`;
     const params = {
@@ -59,15 +69,7 @@ async function getAccountTransactions(address: string, apiKey: string): Promise<
         sort: 'asc',
         apiKey: apiKey
     };
-
-    try {
-        const response = await http.get<EtherscanApiResponse>(url, {params}); // Use the rate-limited instance
-        let result = response.data.result;
-        return result;
-    } catch (error) {
-        console.error(`Error fetching transactions: ${error}`);
-        throw error;
-    }
+    return await executeRequest(url, params);
 }
 
 async function getAccountBalances(addresses: string[], apiKey: string): Promise<any> {
@@ -80,14 +82,7 @@ async function getAccountBalances(addresses: string[], apiKey: string): Promise<
         apiKey: apiKey
     };
 
-    try {
-        const response = await http.get<EtherscanApiResponse>(url, {params}); // Use the rate-limited instance
-        let result = response.data.result;
-        return result;
-    } catch (error) {
-        console.error(`Error fetching balances: ${error}`);
-        throw error;
-    }
+    return executeRequest(url, params);
 }
 
 async function extractAddresses(address: string, transactions: EthereumTransaction[], depth: number, maxDepth: number): Promise<EthereumAddress> {
