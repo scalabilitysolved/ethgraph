@@ -190,9 +190,7 @@ export async function run(address: string, maxDepth: number): Promise<EthereumAd
     const balanceResults = (await Promise.all(balancePromises)).flat();
 
     // Combine balance data with relationship data
-    const combinedData = combineBalancesWithRelationshipData(addresses, balanceResults);
-
-    return combinedData;
+    return combineBalancesWithRelationshipData(addresses, balanceResults);
 }
 
 function weiToEther(wei: string | number): string {
