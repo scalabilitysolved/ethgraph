@@ -1,51 +1,66 @@
 import * as d3 from 'https://cdn.skypack.dev/d3@7';
 
 let container;
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('address-form');
     console.log("Going to request recent addresses");
-    fetchRecentAddresses()
+
+    /*fetchRecentAddresses()
         .then(recentAddresses => {
             console.log('Recent addresses:', recentAddresses);
             displayRecentAddresses(recentAddresses);
         })
         .catch(error => {
             console.error('Error initializing recent addresses:', error);
-        });
+        });*/
 
     form.addEventListener('submit', function (event) {
-        event.preventDefault();
-        const address = document.getElementById('ethereum-address').value;
-        const validationMessageDiv = document.getElementById('validation-message');
-
-        if (!isValidEthereumAddress(address)) {
-            validationMessageDiv.textContent = "Please enter a valid Ethereum address.";
-            validationMessageDiv.style.display = 'block';
-            return;
-        } else {
-            validationMessageDiv.style.display = 'none';
-        }
-
-        const depth = document.querySelector('input[name="depth"]:checked').value;
-
-        document.getElementById('form-container').style.display = 'none';
-        document.getElementById('loading-indicator').style.display = 'block';
-        document.getElementById('zoom-controls').style.display = 'none';
-
-        fetchDataFromServer(address, depth);
+        produceGraph(event);
     });
 });
 
-async function fetchDataFromServer(address, depth) {
-    return executeRequest(`/data?address=${address}&depth=${depth}`)
+function produceGraph(event) {
+    event.preventDefault();
+    const address = document.getElementById('ethereum-address').value;
+    const validationMessageDiv = document.getElementById('validation-message');
+
+    if (!isValidEthereumAddress(address)) {
+        validationMessageDiv.textContent = "Please enter a valid Ethereum address.";
+        validationMessageDiv.style.display = 'block';
+        return;
+    } else {
+        validationMessageDiv.style.display = 'none';
+    }
+
+    const depth = document.querySelector('input[name="depth"]:checked').value;
+
+    document.getElementById('form-container').style.display = 'none';
+    console.log("Showing loading indicator");
+    document.getElementById('loading-indicator').style.display = 'block';
+    document.getElementById('zoom-controls').style.display = 'none';
+
+    executeRequest(`/data?address=${address}&depth=${depth}`)
         .then(data => {
             document.getElementById('graph-container').style.display = 'block';
             document.getElementById('form-container').style.display = 'none';
-            renderGraph(data, address);
+            renderGraph(data, address, "produceGraph");
         }).catch(error => {
-            console.error('Error fetching data:', error);
-            document.getElementById('loading-indicator').style.display = 'none';
-            document.getElementById('form-container').style.display = 'block';
+        console.error('Error fetching data:', error);
+        document.getElementById('loading-indicator').style.display = 'none';
+        document.getElementById('form-container').style.display = 'block';
+    });
+}
+
+
+async function fetchRecentAddresses() {
+    return executeRequest('/recent-addresses')
+        .then(recentAddresses => {
+            return recentAddresses;
+        }).catch(error => {
+            console.error('Error fetching recent addresses:', error);
+            return [];
         });
 }
 
@@ -56,16 +71,6 @@ async function executeRequest(url) {
         }
         return response.json();
     });
-}
-
-async function fetchRecentAddresses() {
-    return executeRequest('/recent-addresses')
-        .then(recentAddresses => {
-            return recentAddresses;
-        }).catch(error => {
-            console.error('Error fetching recent addresses:', error);
-            return [];
-        });
 }
 
 function displayRecentAddresses(addressesWithDepth) {
@@ -84,7 +89,16 @@ function displayRecentAddresses(addressesWithDepth) {
         listItem.textContent = `${address} (Depth: ${depth})`; // Display both
         listItem.onclick = () => {
             document.getElementById('ethereum-address').value = address;
-            fetchDataFromServer(address, depth);
+            executeRequest(`/data?address=${address}&depth=${depth}`)
+                .then(data => {
+                    document.getElementById('graph-container').style.display = 'block';
+                    document.getElementById('form-container').style.display = 'none';
+                    renderGraph(data, address, "displayRecentAddresses");
+                }).catch(error => {
+                console.error('Error fetching data:', error);
+                document.getElementById('loading-indicator').style.display = 'none';
+                document.getElementById('form-container').style.display = 'block';
+            });
         };
         list.appendChild(listItem);
     });
@@ -95,7 +109,16 @@ function displayRecentAddresses(addressesWithDepth) {
         const address = document.getElementById('ethereum-address').value;
         const depth = document.querySelector('input[name="depth"]:checked').value;
 
-        fetchDataFromServer(address, depth);
+        executeRequest(`/data?address=${address}&depth=${depth}`)
+            .then(data => {
+                document.getElementById('graph-container').style.display = 'block';
+                document.getElementById('form-container').style.display = 'none';
+                renderGraph(data, address, "addressFormWhenSubmitted");
+            }).catch(error => {
+            console.error('Error fetching data:', error);
+            document.getElementById('loading-indicator').style.display = 'none';
+            document.getElementById('form-container').style.display = 'block';
+        });
     });
 
 }
@@ -138,7 +161,10 @@ function flattenData(accountRelationship) {
     return {nodes, links};
 }
 
-function renderGraph(accountRelationship, rootAddress) {
+function renderGraph(accountRelationship, rootAddress, caller) {
+    //TODO Can probably delete this now
+
+    console.log(`Rendering graph and invoked by ${caller}`);
     if (!accountRelationship) {
         console.error('No data received from the server');
         return;
@@ -181,21 +207,6 @@ function renderGraph(accountRelationship, rootAddress) {
         .attr('d', 'M0,-5L10,0L0,5')
         .attr('fill', '#999');
 
-    function getInitialZoom() {
-        const bounds = container.node().getBBox();
-        const padding = 100; // Extra padding around the graph
-        const dx = bounds.width + padding;
-        const dy = bounds.height + padding;
-        const x = bounds.x - padding / 2;
-        const y = bounds.y - padding / 2;
-
-        const scale = 0.9 / Math.max(dx / width, dy / height);
-        const translate = [width / 2 - scale * (x + dx / 2), height / 2 - scale * (y + dy / 2)];
-
-        return d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale);
-    }
-
-
     const balanceColorScale = d3.scaleThreshold()
         .domain([0.1, 1, 10, 100])
         .range(["#00FF00", "#7FFF00", "#FFFF00", "#FFA500", "#FF0000"]);
@@ -207,11 +218,11 @@ function renderGraph(accountRelationship, rootAddress) {
         .on("end", () => {
 
             // Hide loading indicator only when the graph is ready
+            console.log("Hiding loading indicator from simulation end");
             document.getElementById('loading-indicator').style.display = 'none';
 
             // Display zoom controls when the graph is ready
             document.getElementById('zoom-controls').style.display = 'flex';
-
 
         });
 
