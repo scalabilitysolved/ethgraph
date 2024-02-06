@@ -113,7 +113,6 @@ function displayRecentAddresses(addressesWithDepth) {
 
 }
 
-
 function isValidEthereumAddress(address) {
     const re = /^0x[a-fA-F0-9]{40}$/;
     return re.test(address);
@@ -165,7 +164,6 @@ function renderGraph(accountRelationship, rootAddress, caller) {
         node.isRoot = node.id === rootAddress;
     });
 
-
     const width = window.innerWidth;
     const height = window.innerHeight;
 
@@ -179,9 +177,11 @@ function renderGraph(accountRelationship, rootAddress, caller) {
     const zoom = d3.zoom()
         .scaleExtent([0.1, 10])
         .on("zoom", (event) => {
+            console.log("Setting zoom");
             container.attr("transform", event.transform);
         });
     svg.call(zoom);
+
 
     svg.append('defs').selectAll('marker')
         .data(['end']) // This can be a list if you have different types of markers
@@ -207,12 +207,30 @@ function renderGraph(accountRelationship, rootAddress, caller) {
         .force("center", d3.forceCenter(width / 2, height / 2))
         .on("end", () => {
 
-            // Hide loading indicator only when the graph is ready
             console.log("Hiding loading indicator from simulation end");
             loadingIndicator.style.display = 'none';
-
-            // Display zoom controls when the graph is ready
             zoomControls.style.display = 'flex';
+
+            // Calculate bounding box of the graph
+            let minX = d3.min(nodes, d => d.x),
+                minY = d3.min(nodes, d => d.y),
+                maxX = d3.max(nodes, d => d.x),
+                maxY = d3.max(nodes, d => d.y),
+                graphWidth = maxX - minX,
+                graphHeight = maxY - minY,
+                width = svg.attr("width"),
+                height = svg.attr("height"),
+                scale = Math.min(width / graphWidth, height / graphHeight) * 0.8, // 0.8 for padding
+                translate = [
+                    (width - scale * (maxX + minX)) / 2,
+                    (height - scale * (maxY + minY)) / 2
+                ];
+
+
+            svg.transition().duration(500).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+            );
 
         });
 
