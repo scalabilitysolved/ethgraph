@@ -206,9 +206,6 @@ function renderGraph(accountRelationship, rootAddress, caller) {
         .force("charge", d3.forceManyBody().strength(-1500))
         .force("center", d3.forceCenter(width / 2, height / 2))
         .on("end", () => {
-
-            console.log("Hiding loading indicator from simulation end");
-            loadingIndicator.style.display = 'none';
             zoomControls.style.display = 'flex';
 
             // Calculate bounding box of the graph
@@ -231,7 +228,6 @@ function renderGraph(accountRelationship, rootAddress, caller) {
                 zoom.transform,
                 d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
             );
-
         });
 
     const link = container.append("g")
@@ -367,4 +363,7 @@ function renderGraph(accountRelationship, rootAddress, caller) {
             .on("drag", dragged)
             .on("end", dragended);
     }
+
+    //Call loading indicator off here because if called on the end event for d3 the graph will still be stabilizing
+    loadingIndicator.style.display = 'none';
 }
