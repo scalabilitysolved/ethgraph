@@ -1,10 +1,17 @@
 import * as d3 from 'https://cdn.skypack.dev/d3@7';
 
 let container;
+const addressForm = document.getElementById('address-form');
+const formContainer = document.getElementById('form-container');
+const ethereumAddressInput = document.getElementById('ethereum-address');
+const validationMessageDiv = document.getElementById('validation-message');
+const loadingIndicator = document.getElementById('loading-indicator');
+const zoomControls = document.getElementById('zoom-controls');
+const graphContainer = document.getElementById('graph-container');
+const infoCard = document.getElementById('info-card');
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('address-form');
     console.log("Going to request recent addresses");
 
     /*fetchRecentAddresses()
@@ -16,15 +23,14 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error initializing recent addresses:', error);
         });*/
 
-    form.addEventListener('submit', function (event) {
+    addressForm.addEventListener('submit', function (event) {
         produceGraph(event);
     });
 });
 
 function produceGraph(event) {
     event.preventDefault();
-    const address = document.getElementById('ethereum-address').value;
-    const validationMessageDiv = document.getElementById('validation-message');
+    const address = ethereumAddressInput.value;
 
     if (!isValidEthereumAddress(address)) {
         validationMessageDiv.textContent = "Please enter a valid Ethereum address.";
@@ -36,20 +42,20 @@ function produceGraph(event) {
 
     const depth = document.querySelector('input[name="depth"]:checked').value;
 
-    document.getElementById('form-container').style.display = 'none';
+    formContainer.style.display = 'none';
     console.log("Showing loading indicator");
-    document.getElementById('loading-indicator').style.display = 'block';
-    document.getElementById('zoom-controls').style.display = 'none';
+    loadingIndicator.style.display = 'block';
+    zoomControls.style.display = 'none';
 
     executeRequest(`/data?address=${address}&depth=${depth}`)
         .then(data => {
-            document.getElementById('graph-container').style.display = 'block';
-            document.getElementById('form-container').style.display = 'none';
+            graphContainer.style.display = 'block';
+            formContainer.style.display = 'none';
             renderGraph(data, address, "produceGraph");
         }).catch(error => {
         console.error('Error fetching data:', error);
-        document.getElementById('loading-indicator').style.display = 'none';
-        document.getElementById('form-container').style.display = 'block';
+        loadingIndicator.style.display = 'none';
+        formContainer.style.display = 'block';
     });
 }
 
@@ -88,36 +94,36 @@ function displayRecentAddresses(addressesWithDepth) {
         let listItem = document.createElement('li');
         listItem.textContent = `${address} (Depth: ${depth})`; // Display both
         listItem.onclick = () => {
-            document.getElementById('ethereum-address').value = address;
+            ethereumAddressInput.value = address;
             executeRequest(`/data?address=${address}&depth=${depth}`)
                 .then(data => {
-                    document.getElementById('graph-container').style.display = 'block';
-                    document.getElementById('form-container').style.display = 'none';
+                    graphContainer.style.display = 'block';
+                    formContainer.style.display = 'none';
                     renderGraph(data, address, "displayRecentAddresses");
                 }).catch(error => {
                 console.error('Error fetching data:', error);
-                document.getElementById('loading-indicator').style.display = 'none';
-                document.getElementById('form-container').style.display = 'block';
+                loadingIndicator.style.display = 'none';
+                formContainer.style.display = 'block';
             });
         };
         list.appendChild(listItem);
     });
 
-    document.getElementById('address-form').addEventListener('submit', function (event) {
+    addressForm.addEventListener('submit', function (event) {
         event.preventDefault(); // Prevent default form submission behavior
 
-        const address = document.getElementById('ethereum-address').value;
+        const address = ethereumAddressInput.value;
         const depth = document.querySelector('input[name="depth"]:checked').value;
 
         executeRequest(`/data?address=${address}&depth=${depth}`)
             .then(data => {
-                document.getElementById('graph-container').style.display = 'block';
-                document.getElementById('form-container').style.display = 'none';
+                graphContainer.style.display = 'block';
+                formContainer.style.display = 'none';
                 renderGraph(data, address, "addressFormWhenSubmitted");
             }).catch(error => {
             console.error('Error fetching data:', error);
-            document.getElementById('loading-indicator').style.display = 'none';
-            document.getElementById('form-container').style.display = 'block';
+            loadingIndicator.style.display = 'none';
+            formContainer.style.display = 'block';
         });
     });
 
@@ -219,10 +225,10 @@ function renderGraph(accountRelationship, rootAddress, caller) {
 
             // Hide loading indicator only when the graph is ready
             console.log("Hiding loading indicator from simulation end");
-            document.getElementById('loading-indicator').style.display = 'none';
+            loadingIndicator.style.display = 'none';
 
             // Display zoom controls when the graph is ready
-            document.getElementById('zoom-controls').style.display = 'flex';
+            zoomControls.style.display = 'flex';
 
         });
 
@@ -296,14 +302,13 @@ function renderGraph(accountRelationship, rootAddress, caller) {
         document.getElementById('info-balance').textContent = `Balance: ${d.balance} ETH`;
         document.getElementById('info-link').href = 'https://etherscan.io/address/' + d.id;
 
-        const infoCard = document.getElementById('info-card');
         infoCard.style.display = 'block';
         infoCard.style.left = event.pageX + 'px';
         infoCard.style.top = event.pageY + 'px';
     });
 
     svg.on("click", function () {
-        document.getElementById('info-card').style.display = 'none';
+        infoCard.style.display = 'none';
     });
 
     node.append("title")
@@ -326,7 +331,7 @@ function renderGraph(accountRelationship, rootAddress, caller) {
     });
 
 
-    document.getElementById('zoom-controls').style.display = 'flex';
+    zoomControls.style.display = 'flex';
 
     document.getElementById('zoom-in').addEventListener('click', () => {
         zoom.scaleBy(svg.transition().duration(750), 1.2);
