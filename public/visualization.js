@@ -14,16 +14,17 @@ const infoCard = document.getElementById('info-card');
 document.addEventListener('DOMContentLoaded', function () {
     console.log("Going to request recent addresses");
 
-    /*fetchRecentAddresses()
+    fetchRecentAddresses()
         .then(recentAddresses => {
             console.log('Recent addresses:', recentAddresses);
             displayRecentAddresses(recentAddresses);
         })
         .catch(error => {
             console.error('Error initializing recent addresses:', error);
-        });*/
+        });
 
     addressForm.addEventListener('submit', function (event) {
+        console.log("Event listener triggered for addressForm");
         produceGraph(event);
     });
 });
@@ -109,23 +110,6 @@ function displayRecentAddresses(addressesWithDepth) {
         list.appendChild(listItem);
     });
 
-    addressForm.addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevent default form submission behavior
-
-        const address = ethereumAddressInput.value;
-        const depth = document.querySelector('input[name="depth"]:checked').value;
-
-        executeRequest(`/data?address=${address}&depth=${depth}`)
-            .then(data => {
-                graphContainer.style.display = 'block';
-                formContainer.style.display = 'none';
-                renderGraph(data, address, "addressFormWhenSubmitted");
-            }).catch(error => {
-            console.error('Error fetching data:', error);
-            loadingIndicator.style.display = 'none';
-            formContainer.style.display = 'block';
-        });
-    });
 
 }
 
