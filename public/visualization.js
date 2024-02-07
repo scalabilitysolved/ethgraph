@@ -12,11 +12,9 @@ const infoCard = document.getElementById('info-card');
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("Going to request recent addresses");
 
     fetchRecentAddresses()
         .then(recentAddresses => {
-            console.log('Recent addresses:', recentAddresses);
             displayRecentAddresses(recentAddresses);
         })
         .catch(error => {
@@ -24,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
     addressForm.addEventListener('submit', function (event) {
-        console.log("Event listener triggered for addressForm");
         produceGraph(event);
     });
 });
@@ -44,7 +41,6 @@ function produceGraph(event) {
     const depth = document.querySelector('input[name="depth"]:checked').value;
 
     formContainer.style.display = 'none';
-    console.log("Showing loading indicator");
     loadingIndicator.style.display = 'block';
     zoomControls.style.display = 'none';
 
@@ -52,7 +48,7 @@ function produceGraph(event) {
         .then(data => {
             graphContainer.style.display = 'block';
             formContainer.style.display = 'none';
-            renderGraph(data, address, "produceGraph");
+            renderGraph(data, address);
         }).catch(error => {
         console.error('Error fetching data:', error);
         loadingIndicator.style.display = 'none';
@@ -100,7 +96,7 @@ function displayRecentAddresses(addressesWithDepth) {
                 .then(data => {
                     graphContainer.style.display = 'block';
                     formContainer.style.display = 'none';
-                    renderGraph(data, address, "displayRecentAddresses");
+                    renderGraph(data, address);
                 }).catch(error => {
                 console.error('Error fetching data:', error);
                 loadingIndicator.style.display = 'none';
@@ -150,10 +146,7 @@ function flattenData(accountRelationship) {
     return {nodes, links};
 }
 
-function renderGraph(accountRelationship, rootAddress, caller) {
-    //TODO Can probably delete this now
-
-    console.log(`Rendering graph and invoked by ${caller}`);
+function renderGraph(accountRelationship, rootAddress) {
     if (!accountRelationship) {
         console.error('No data received from the server');
         return;
@@ -177,7 +170,6 @@ function renderGraph(accountRelationship, rootAddress, caller) {
     const zoom = d3.zoom()
         .scaleExtent([0.1, 10])
         .on("zoom", (event) => {
-            console.log("Setting zoom");
             container.attr("transform", event.transform);
         });
     svg.call(zoom);
